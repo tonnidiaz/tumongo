@@ -1,0 +1,19 @@
+[package]
+name = "tumongo"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ctor = "0.2"
+serde = { version = "1.0.219", features = ["derive"]}
+futures-util = "0.3.31"
+
+[dependencies.tumongo_utils]
+version = "0.1.0"
+#path = "tumongo_utils"
+git = "https://github.com/tonnidiaz/tumongo_utils.git"
+
+[dependencies.tumongo_derive]
+version = "0.1.0"
+#path = "tumongo_derive"
+git = "https://github.com/tonnidiaz/tumongo_derive.git"
