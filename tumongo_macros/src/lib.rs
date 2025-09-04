@@ -1,4 +1,3 @@
-mod funcs;
 mod tumongo_model;
 mod types;
 
