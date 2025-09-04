@@ -1,0 +1,64 @@
+[TEST] {
+    "company": [
+        FkField {
+            field_name: "company_id",
+            coll: "persons",
+            on_delete: None,
+        },
+    ],
+}
+Person {
+    id: None,
+    name: "Tonni Diaz_1756928580",
+    company_id: 0,
+    created_at: DateTime(
+        DateTime(
+            2025-09-03 19:43:00.633 +00:00:00,
+        ),
+    ),
+    updated_at: DateTime(
+        DateTime(
+            2025-09-03 19:43:00.633 +00:00:00,
+        ),
+    ),
+}
+inserted: 68b89a4456fb451de5d42692
+Person {
+    id: Some(
+        ObjectId(
+            "68b89a4456fb451de5d42692",
+        ),
+    ),
+    name: "Tonni Diaz_1756928580",
+    company_id: 0,
+    created_at: DateTime(
+        DateTime(
+            2025-09-03 19:43:00.633 +00:00:00,
+        ),
+    ),
+    updated_at: DateTime(
+        DateTime(
+            2025-09-03 19:43:00.633 +00:00:00,
+        ),
+    ),
+}
+Updating...
+Person {
+    id: Some(
+        ObjectId(
+            "68b89a4456fb451de5d42692",
+        ),
+    ),
+    name: "Tonni Diaz_1756928580__updated",
+    company_id: 0,
+    created_at: DateTime(
+        DateTime(
+            2025-09-03 19:43:00.633 +00:00:00,
+        ),
+    ),
+    updated_at: DateTime(
+        DateTime(
+            2025-09-03 19:43:02.361 +00:00:00,
+        ),
+    ),
+}
