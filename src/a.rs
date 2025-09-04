@@ -6,7 +6,7 @@ impl Tumongo {
         UNIQUE_FIELDS.get().expect("NO UNIQUE")
     }
     pub fn fk_fields() -> &'static FkFieldMap {
-        FK_FIELDS.get().expect("no FK_FIELDS")
+        FK_FIELDS.get().expect("no FK_FIELDS..")
     }
     pub fn ref_fields() -> &'static FkFieldMap {
         REF_FIELDS.get().expect("no REF_FIELDS")
