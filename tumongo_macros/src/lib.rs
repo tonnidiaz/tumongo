@@ -30,9 +30,9 @@ pub fn register(_inp: TokenStream) -> TokenStream {
     let unique_fields = UNIQUE_FIELDS.lock().unwrap().clone();
     let unique_fields_str = serde_json::to_string(&unique_fields).unwrap();
     quote! {
-        tumongo::FK_FIELDS.set(serde_json::from_str(#fk_fields_str).unwrap()).unwrap();
-        tumongo::REF_FIELDS.set(serde_json::from_str(#ref_fields_str).unwrap()).unwrap();
-        tumongo::UNIQUE_FIELDS.set(serde_json::from_str(#unique_fields_str).unwrap()).unwrap();
+        FK_FIELDS.set(serde_json::from_str(#fk_fields_str).unwrap()).unwrap();
+        REF_FIELDS.set(serde_json::from_str(#ref_fields_str).unwrap()).unwrap();
+        UNIQUE_FIELDS.set(serde_json::from_str(#unique_fields_str).unwrap()).unwrap();
     }
     .into()
 }

@@ -1,8 +1,8 @@
 pub mod a;
 mod traits;
-use std::{collections::HashMap, ops::Deref, str::FromStr, sync::Arc};
+use std::{collections::HashMap, env, ops::Deref, str::FromStr, sync::Arc};
 use futures_util::{lock::Mutex, TryStreamExt};
-use mongodb::{bson::{self, doc, oid::ObjectId, Document}, ClientSession, Database};
+use mongodb::{bson::{self, doc, oid::ObjectId, Document}, Client, ClientSession, Database};
 pub use mongodb as db;
 use once_cell::sync::OnceCell;
 use serde::de::Visitor;
@@ -31,7 +31,7 @@ pub type FkFieldMap = HashMap<String, Vec<FkField>>;
 pub static FK_FIELDS: OnceCell<FkFieldMap> = OnceCell::new();
 pub static REF_FIELDS: OnceCell<FkFieldMap> = OnceCell::new();
 pub static UNIQUE_FIELDS: OnceCell<HashMap<String, Vec<String>>> = OnceCell::new();
-
+pub static DB: OnceCell<Database> = OnceCell::new(); 
 type SyncDoc = Arc<Mutex<Document>>;
 pub type Res<T> = Result<T, Box<dyn std::error::Error + Send + Sync>>;
 pub struct Tumongo;
@@ -279,7 +279,7 @@ impl Tumongo {
     }
 } 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DateTime(bson::DateTime);
 impl Deref for DateTime {
     type Target = bson::DateTime;
@@ -333,4 +333,21 @@ impl DateTime{
     pub fn from_millis(date: i64) -> Self{
         Self(bson::DateTime::from_millis(date))
     }
+}
+
+pub fn mongo_url(offline: bool) -> String{
+    let k = if offline { "MONGO_URL_LOCAL" } else {"MONGO_URL"};
+    env::var(k).expect("Failed to get MONG_URL from .env.")
+}
+
+pub async fn connect_db(url: &str, db_name: &str) -> db::error::Result<()>{
+    println!("\n[{db_name}] Connecting to [{url}]...");
+    let _cl = Client::with_uri_str(url).await?;
+    DB.set(_cl.database(db_name)).ok();
+    Ok(())
+}
+
+pub async fn dbase<'a>() -> &'a Database{
+    register!();
+    DB.get().unwrap()
 }
