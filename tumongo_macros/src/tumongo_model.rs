@@ -211,11 +211,20 @@ pub fn main(input: DeriveInput) -> TokenStream {
 
                 pub async fn find(
                     _db: &Database,
-                    filter: Document,
+                    filter: Document, skip: Option<u64>, limit: Option<i64>
                 ) -> Res<Vec<Self>> {
-                    let mut res = _db
-                        .collection::<Document>(&Self::coll_name())
-                        .find(filter.clone())
+
+                    let mut query = _db
+                    .collection::<Document>(&Self::coll_name())
+                    .find(filter.clone());
+                    
+                    if let Some(skip) = skip{
+                        query = query.skip(skip);
+                    }
+                    if let Some(limit) = limit{
+                        query = query.limit(limit);
+                    }
+                    let mut res = query
                         .await?;
 
                     let mut res_doks = vec![];

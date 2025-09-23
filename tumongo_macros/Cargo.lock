@@ -1826,6 +1826,7 @@ dependencies = [
 [[package]]
 name = "turs"
 version = "0.1.0"
+source = "git+https://github.com/tonnidiaz/turs.git#e0d63c0d1d2224f3806e174704389d948ac5cbad"
 dependencies = [
  "chrono",
  "futures",
