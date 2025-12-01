@@ -213,9 +213,10 @@ pub fn main(input: DeriveInput) -> TokenStream {
                     _db: &Database,
                     filter: Document, skip: Option<u64>, limit: Option<i64>
                 ) -> Res<Vec<Self>> {
+                    let coll = _db
+                    .collection::<Document>(&Self::coll_name());
 
-                    let mut query = _db
-                    .collection::<Document>(&Self::coll_name())
+                    let mut query = coll
                     .find(filter.clone());
                     
                     if let Some(skip) = skip{
@@ -231,14 +232,18 @@ pub fn main(input: DeriveInput) -> TokenStream {
 
                     while let Some(dok) = res.try_next().await? {
                         let _id = dok.get_object_id("_id").expect("no _id");
-                        if let Ok(mut dok) = bson::from_document::<Self>(dok.clone()){
+
+                        match bson::from_document::<Self>(dok.clone()){
+                        Ok(mut dok) =>{
                             dok.id.replace(_id);
                             res_doks.push(dok);
-                        }else{
-                            println!("[find] [{}] Error serializing dok {dok:?}", Self::coll_name());
-                        }
+                        },
+                        Err(err)=>{
+                            eprintln!("[find] [{}] Error serializing dok {dok:?}", Self::coll_name());
+                            eprintln!("{err:?}");
+                        }}
 
-                    }
+                    };
 
                     Ok(res_doks)
                 }

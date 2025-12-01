@@ -1,22 +1,25 @@
 pub mod a;
 mod traits;
-use std::{collections::HashMap, env, ops::Deref, str::FromStr, sync::Arc};
-use futures_util::{lock::Mutex, TryStreamExt};
-use mongodb::{bson::{self, doc, oid::ObjectId, Document}, Client, ClientSession, Database};
+pub use futures_util;
+use futures_util::{TryStreamExt, lock::Mutex};
 pub use mongodb as db;
+use mongodb::{
+    Client, ClientSession, Database,
+    bson::{self, Document, doc, oid::ObjectId},
+};
+pub use once_cell;
 use once_cell::sync::OnceCell;
 use serde::de::Visitor;
-pub use serde::{Deserialize, Serialize}; 
-pub use tumongo_macros::*;
+pub use serde::{Deserialize, Serialize};
 pub use serde_json;
-pub use futures_util;
-pub use once_cell;
+use std::{collections::HashMap, env, ops::Deref, str::FromStr, sync::Arc};
 use strum_macros::{EnumString, VariantNames};
- 
+pub use tumongo_macros::*;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumString, VariantNames, Serialize, Deserialize)]
 #[strum(serialize_all = "snake_case")]
-pub enum OnDelete{ 
-    Null, Cascade
+pub enum OnDelete {
+    Null,
+    Cascade,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -31,7 +34,7 @@ pub type FkFieldMap = HashMap<String, Vec<FkField>>;
 pub static FK_FIELDS: OnceCell<FkFieldMap> = OnceCell::new();
 pub static REF_FIELDS: OnceCell<FkFieldMap> = OnceCell::new();
 pub static UNIQUE_FIELDS: OnceCell<HashMap<String, Vec<String>>> = OnceCell::new();
-pub static DB: OnceCell<Database> = OnceCell::new(); 
+pub static DB: OnceCell<Database> = OnceCell::new();
 type SyncDoc = Arc<Mutex<Document>>;
 pub type Res<T> = Result<T, Box<dyn std::error::Error + Send + Sync>>;
 pub struct Tumongo;
@@ -151,9 +154,7 @@ impl Tumongo {
                     let dok_populated = dok_populated.lock().await.clone();
                     _dok.lock().await.extend(dok_populated);
                     let _dok = _dok.lock().await.clone();
-                    dok.lock()
-                        .await
-                        .insert(field.to_owned(), _dok );
+                    dok.lock().await.insert(field.to_owned(), _dok);
                 }
             }
         }
@@ -277,7 +278,7 @@ impl Tumongo {
 
         dok.lock().await.clone()
     }
-} 
+}
 
 #[derive(Debug, Clone)]
 pub struct DateTime(bson::DateTime);
@@ -289,65 +290,82 @@ impl Deref for DateTime {
     }
 }
 
-impl Default for DateTime{
+impl Default for DateTime {
     fn default() -> Self {
         Self(bson::DateTime::now())
     }
 }
-impl Serialize for DateTime{
+ impl Serialize for DateTime {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer {
-        serializer.serialize_str(&self.try_to_rfc3339_string().unwrap())
+        S: serde::Serializer,
+    {
+        self.0.serialize(serializer)
     }
 }
 
+impl<'de> Deserialize<'de> for DateTime {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let inner = bson::DateTime::deserialize(deserializer)?;
+        Ok(DateTime(inner))
+    }
+}
+/*
 struct DateTimeVisitor;
 
-impl<'de> Visitor<'de> for DateTimeVisitor{
+impl<'de> Visitor<'de> for DateTimeVisitor {
     type Value = DateTime;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(formatter, "A date-time string.")
+        write!(formatter, "a date-time string.")
     }
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
         where
             E: serde::de::Error, {
-        Ok(DateTime(bson::DateTime::parse_rfc3339_str(v).expect("Failed to parse date_str.")))
+        Ok(DateTime( bson::DateTime::parse_rfc3339_str(v).expect("Failed to parse date_str.")))
     }
 }
 
-impl<'de> Deserialize<'de> for DateTime{
+impl<'de> Deserialize<'de> for DateTime {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::Deserializer<'de> {
+        D: serde::Deserializer<'de>,
+    {
         deserializer.deserialize_str(DateTimeVisitor)
     }
-}
+} */
 
-impl DateTime{
-    pub fn now() -> Self{
+impl DateTime {
+    pub fn now() -> Self {
         Self(bson::DateTime::now())
     }
-    pub fn from_millis(date: i64) -> Self{
+    pub fn from_millis(date: i64) -> Self {
         Self(bson::DateTime::from_millis(date))
     }
 }
 
-pub fn mongo_url(offline: bool) -> String{
-    let k = if offline { "MONGO_URL_LOCAL" } else {"MONGO_URL"};
+pub fn mongo_url(offline: bool) -> String {
+    let k = if offline {
+        "MONGO_URL_LOCAL"
+    } else {
+        "MONGO_URL"
+    };
     env::var(k).expect("Failed to get MONG_URL from .env.")
 }
 
-pub async fn connect_db(url: &str, db_name: &str) -> db::error::Result<()>{
+pub async fn connect_db(url: &str, db_name: &str) -> db::error::Result<()> {
+    register!();
     println!("\n[{db_name}] Connecting to [{url}]...");
     let _cl = Client::with_uri_str(url).await?;
     DB.set(_cl.database(db_name)).ok();
     Ok(())
 }
 
-pub async fn dbase<'a>() -> &'a Database{
-    register!();
+pub fn dbase<'a>() -> &'a Database {
+    // register!();
     DB.get().unwrap()
 }
