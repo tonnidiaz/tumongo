@@ -291,12 +291,16 @@ pub fn main(input: DeriveInput) -> TokenStream {
                             _id.clone()
                         } else {
                             self.created_at = tumongo::DateTime::now();
+                            println!("[new_acc] created_at: {:?}", self.created_at);
                             coll.insert_one(&*self)
                                 .await?
                                 .inserted_id
                                 .as_object_id()
                                 .unwrap()
                         };
+
+                        println!("[new_acc] created_at: {:?}\n", self.created_at);
+
 
                         self.id.replace(tx);
                         Ok(())
@@ -366,6 +370,7 @@ pub fn main(input: DeriveInput) -> TokenStream {
                     doc_dok
                 }
              */
+            
             pub async fn populate(&self, _db: &Database, coll_names: Option<&[&str]>) -> Document {
                 Tumongo::populate(
                     &_db,
