@@ -211,7 +211,7 @@ pub fn main(input: DeriveInput) -> TokenStream {
 
                 pub async fn find(
                     _db: &Database,
-                    filter: Document, skip: Option<u64>, limit: Option<i64>
+                    filter: Document, skip: Option<u64>, limit: Option<i64>, sort: Option<Document>
                 ) -> Res<Vec<Self>> {
                     let coll = _db
                     .collection::<Document>(&Self::coll_name());
@@ -224,7 +224,10 @@ pub fn main(input: DeriveInput) -> TokenStream {
                     }
                     if let Some(limit) = limit{
                         query = query.limit(limit);
+                    }if let Some(sort) = sort{
+                        query = query.sort(limit);
                     }
+                    
                     let mut res = query
                         .await?;
 
