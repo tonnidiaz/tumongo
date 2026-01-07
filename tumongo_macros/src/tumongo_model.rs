@@ -225,7 +225,7 @@ pub fn main(input: DeriveInput) -> TokenStream {
                     if let Some(limit) = limit{
                         query = query.limit(limit);
                     }if let Some(sort) = sort{
-                        query = query.sort(limit);
+                        query = query.sort(sort);
                     }
                     
                     let mut res = query
